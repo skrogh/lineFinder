@@ -22,17 +22,49 @@ int main(int argc, char const *argv[])
 		count++;
 		cv::Mat image;
 		cap >> image;
+		int width = 320;
+		int height = 240;
 
 		int lineX[MAX_LINES];
 		int lineY[MAX_LINES];
 		int lines;
-		findLines( image, 320, 240, 150, lineX, lineY, &lines);
+		findLines( image, width, height, 150, lineX, lineY, &lines);
 
 		
 		for ( int j = 0; j < lines; j++ )
 		{
-			circle( image, cv::Point(lineX[j], lineY[j]), 10, cv::Scalar(0,0,255));
+			cv::circle( image, cv::Point(lineX[j], lineY[j]), 10, cv::Scalar(0,0,255));
 		}
+		// Extract right side of line (get line in top and bottom)
+		int maxTop = -1;
+		int maxTopJ = -1;
+		int maxBot = -1;
+		int maxBotJ = -1;
+		for ( int j = 0; j < lines; j++ )
+		{
+			if ( lineY[j] > height/2 )
+			{
+				if( lineX[j]>maxTop )
+				{
+					maxTop = lineX[j];
+					maxTopJ = j;
+				}
+			}
+			else
+			{
+				if( lineX[j]>maxBot )
+				{
+					maxBot = lineX[j];
+					maxBotJ = j;
+				}
+			}
+
+		}
+		if ( maxTopJ>=0 && maxBotJ>=0 )
+		{
+			cv::line( image, cv::Point(lineX[maxTopJ], lineY[maxTopJ]), cv::Point(lineX[maxBotJ], lineY[maxBotJ]), cv::Scalar(0,0,255));
+		}
+
 		cv::imshow( "Display", image );
 		cv::waitKey(1);                                          // Wait for a keystroke in the window
    
