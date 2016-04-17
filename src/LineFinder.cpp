@@ -4,7 +4,7 @@
 #include "opencv2/highgui/highgui.hpp"
 
 void
-findLines( const cv::Mat& image, int width, int height, int edges, int lineX[MAX_LINES], int lineY[MAX_LINES] )
+findLines( const cv::Mat& image, int width, int height, int edges, int lineX[MAX_LINES], int lineY[MAX_LINES], int* lines_ )
 {
 	int borderLength = width*2 + height*2 - 4;
 
@@ -101,4 +101,5 @@ findLines( const cv::Mat& image, int width, int height, int edges, int lineX[MAX
 		if ( lines > (MAX_LINES-2) )
 			break;
 	}
+	*lines_ = lines;
 }
