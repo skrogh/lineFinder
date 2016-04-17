@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
 		return -1;
 	cap.set(CV_CAP_PROP_FRAME_WIDTH,320);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT,240);
-	cap.set(CV_CAP_PROP_FPS,30);
+	cap.set(CV_CAP_PROP_FPS,15);
 
 
 	unsigned int count = 0;
@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
 		
 		for ( int j = 0; j < lines; j++ )
 		{
-			circle( image, cv::Point(lineX[j], lineY[j]), 10, cv::Scalar(255,0,0));
+			circle( image, cv::Point(lineX[j], lineY[j]), 10, cv::Scalar(0,0,255));
 		}
 		cv::imshow( "Display", image );
 		cv::waitKey(1);                                          // Wait for a keystroke in the window
