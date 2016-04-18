@@ -3,6 +3,10 @@
 #include "opencv2/videoio/videoio.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
+#include <Eigen/Core>
+#include <Eigen/Geometry> 
+#include <cmath> 
+
 void
 findLines( const cv::Mat& image, int width, int height, int edges, int lineX[MAX_LINES], int lineY[MAX_LINES], int* lines_ )
 {
@@ -102,4 +106,71 @@ findLines( const cv::Mat& image, int width, int height, int edges, int lineX[MAX
 			break;
 	}
 	*lines_ = lines;
+}
+
+bool
+findRightLine( int lineX[], int lineY[], int lines, int width, int height,
+	int* startX, int* startY, int* endX, int* endY )
+{
+	// Extract right side of line (get line in top and bottom)
+	int maxTop = -1;
+	int maxTopJ = -1;
+	int maxBot = -1;
+	int maxBotJ = -1;
+	for ( int j = 0; j < lines; j++ )
+	{
+		if ( lineY[j] > height/2 )
+		{
+			if( lineX[j]>maxTop )
+			{
+				maxTop = lineX[j];
+				maxTopJ = j;
+			}
+		}
+		else
+		{
+			if( lineX[j]>maxBot )
+			{
+				maxBot = lineX[j];
+				maxBotJ = j;
+			}
+		}
+
+	}
+	if ( maxTopJ>=0 && maxBotJ>=0 )
+	{
+		*startX = lineX[maxBotJ];
+		*startY = lineY[maxBotJ];
+		*endX = lineX[maxTopJ];
+		*endY = lineY[maxTopJ];
+		return true;
+	}
+	return false;
+}
+
+void
+findDistTheta( double startX, double startY, double endX, double endY, double width, double height,
+	double* dist, double* theta, Eigen::Vector2d& p_center_l, Eigen::Vector2d& p_line_w )
+{
+	startY = height - 1 - startY;
+	endY = height - 1 - endY;
+
+	Eigen::Vector2d start(startX,startY);
+	Eigen::Vector2d end(endX,endY);
+	Eigen::Vector2d center(width/2.0,height/2.0);
+
+	Eigen::Vector2d p_center_w = center - start;
+	Eigen::Vector2d l_direction = end - start;
+	l_direction.normalize();
+
+	Eigen::Matrix2d R_w_l;
+	R_w_l
+		<< l_direction(0) , -l_direction(1)
+		,  l_direction(1) ,  l_direction(0);
+
+	p_center_l = R_w_l.transpose() * p_center_w;
+	p_line_w << 0.0 , -p_center_l(1);
+	p_line_w = R_w_l*p_line_w;
+	*dist = p_center_l(1);
+	*theta = atan2(l_direction(0),-l_direction(1));
 }

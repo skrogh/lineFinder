@@ -3,6 +3,7 @@
 #include "opencv2/videoio/videoio.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <stdio.h>
+#include <Eigen/Core>
 
 #define MAX_LINES (20)
 
@@ -35,34 +36,16 @@ int main(int argc, char const *argv[])
 		{
 			cv::circle( image, cv::Point(lineX[j], lineY[j]), 10, cv::Scalar(0,0,255));
 		}
-		// Extract right side of line (get line in top and bottom)
-		int maxTop = -1;
-		int maxTopJ = -1;
-		int maxBot = -1;
-		int maxBotJ = -1;
-		for ( int j = 0; j < lines; j++ )
-		{
-			if ( lineY[j] > height/2 )
-			{
-				if( lineX[j]>maxTop )
-				{
-					maxTop = lineX[j];
-					maxTopJ = j;
-				}
-			}
-			else
-			{
-				if( lineX[j]>maxBot )
-				{
-					maxBot = lineX[j];
-					maxBotJ = j;
-				}
-			}
 
-		}
-		if ( maxTopJ>=0 && maxBotJ>=0 )
+		int startX, startY, endX, endY;
+		if ( findRightLine( lineX, lineY, lines, width, height, &startX, &startY, &endX, &endY ) )
 		{
-			cv::line( image, cv::Point(lineX[maxTopJ], lineY[maxTopJ]), cv::Point(lineX[maxBotJ], lineY[maxBotJ]), cv::Scalar(0,0,255));
+			double dist, theta;
+			Eigen::Vector2d p_center_l, p_line_w;
+			findDistTheta( startX, startY, endX, endY, width, height, &dist, &theta, p_center_l, p_line_w );
+			cv::line( image, cv::Point(startX, startY), cv::Point(endX, endY), cv::Scalar(0,0,255));
+			cv::line( image, cv::Point(width/2.0, height/2.0), cv::Point(width/2.0+p_line_w(0), height/2.0-p_line_w(1)), cv::Scalar(0,0,255));
+			printf( "dist: %f, theta %f\n", dist, theta );
 		}
 
 		cv::imshow( "Display", image );
